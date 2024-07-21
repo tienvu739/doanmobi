@@ -1,0 +1,232 @@
+import 'dart:convert';
+import 'dart:typed_data';
+
+import 'package:doanmobi/Screens/hoteler.dart';
+import 'package:doanmobi/Screens/hotelier/HotelierManager.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:http/http.dart' as http;
+
+import '../../WIdget/Appbar.dart';
+import '../HotelScreenHoteler.dart';
+import '../../models/Service.dart';
+
+class addHotelerScreenHotel extends StatefulWidget {
+  const addHotelerScreenHotel({super.key});
+
+  @override
+  State<addHotelerScreenHotel> createState() => _addHotelerScreenHotelState();
+}
+
+class _addHotelerScreenHotelState extends State<addHotelerScreenHotel> {
+
+  Uint8List? _image;
+  final _nameController = TextEditingController();
+  final _addressController = TextEditingController();
+  final _describeController = TextEditingController();
+  final _policyController = TextEditingController();
+
+  List<dynamic> _services = [];
+  String? _selectedService;
+  List<dynamic> _convenient = [];
+  String? _selectedConvenient;
+  final List<String> _hotelTypes = ['Khách sạn', 'Nhà nghỉ'];
+  String? _selectedHotelType;
+
+  final allHotelsRoute = MaterialPageRoute(builder: (context) => const hotelerScreen());
+
+  Future<void> _pickImage() async {
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+
+    if (pickedFile != null) {
+      final bytes = await pickedFile.readAsBytes();
+      setState(() {
+        _image = bytes;
+      });
+    }
+  }
+
+  Future<void> _submitForm() async {
+
+      final url = Uri.parse('https://10.0.2.2:7226/api/Hotel/addHotel');
+
+      // Lấy token và id từ SharedPreferences
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('auth_token') ?? '';
+      final id = prefs.getString('auth_id') ?? '';
+
+      // Chuẩn bị thân yêu cầu
+      final requestBody = {
+        "nameHotel": _nameController.text,
+        "addressHotel": _addressController.text,
+        "describeHotel": _describeController.text,
+        "policyHotel": _policyController.text,
+        "typeHotel": _selectedHotelType,
+        "statusHotel": true,
+        "idHotelier": id,
+        "images": [
+          {
+            "imageData": _image != null ? base64Encode(_image!) : '',
+          }
+        ],
+      };
+
+      try {
+        final response = await http.post(
+          url,
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer $token',
+          },
+          body: jsonEncode(requestBody),
+        );
+
+        if (response.statusCode == 200) {
+          print('Hotel created successfully');
+        } else {
+          print('Failed to create hotel: ${response.body}');
+        }
+      } catch (error) {
+        print('Error: $error');
+      }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchServices();
+    _fetchConvenient();
+  }
+
+  Future<void> _fetchServices() async {
+    final url = Uri.parse('https://10.0.2.2:7270/api/Service/dsAllService');
+    try {
+      final response = await http.get(url);
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        setState(() {
+          _services = data;
+        });
+      } else {
+        print('Failed to fetch services');
+      }
+    } catch (error) {
+      print('Error decoding services: $error');
+    }
+  }
+
+  Future<void> _fetchConvenient() async {
+    final url = Uri.parse('https://10.0.2.2:7270/api/Service/dsAllService');
+    try {
+      final response = await http.get(url);
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        setState(() {
+          _convenient = data;
+        });
+      } else {
+        print('Failed to fetch convenient');
+      }
+    } catch (error) {
+      print('Error decoding convenient: $error');
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+        body: SingleChildScrollView(
+          child: Column(
+            children: [
+              SizedBox(height: 40.0),
+              // Danh sách khách sạn
+              TextButton.icon(
+                onPressed: _pickImage,
+                icon: const Icon(Icons.image, size: 60,),
+                label: const Text('Chọn ảnh'),
+              ),
+              if (_image != null)
+                Image.memory(_image!),
+              TextFormField(
+                controller: _nameController,
+                decoration: const InputDecoration(labelText: 'Tên khách sạn'),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Vui lòng nhập tên khách sạn';
+                  }
+                  return null;
+                },
+              ),
+              TextFormField(
+                controller: _addressController,
+                decoration: const InputDecoration(labelText: 'Địa chỉ'),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Vui lòng nhập địa chỉ';
+                  }
+                  return null;
+                },
+              ),
+              TextFormField(
+                controller: _describeController,
+                decoration: const InputDecoration(labelText: 'Mô tả'),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Vui lòng nhập mô tả';
+                  }
+                  return null;
+                },
+              ),
+              TextFormField(
+                controller: _policyController,
+                decoration: const InputDecoration(labelText: 'Chính sách'),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Vui lòng nhập chính sách';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 16.0),
+              DropdownButtonFormField<String>(
+                decoration: const InputDecoration(
+                  labelText: 'Loại hình khách sạn',
+                ),
+                value: _selectedHotelType,
+                onChanged: (String? newValue) {
+                  setState(() {
+                    _selectedHotelType = newValue;
+                  });
+                },
+                items: _hotelTypes.map<DropdownMenuItem<String>>((String value) {
+                  return DropdownMenuItem<String>(
+                    value: value,
+                    child: Text(value),
+                  );
+                }).toList(),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Vui lòng chọn loại hình khách sạn';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 16.0),
+              ElevatedButton(
+                onPressed: (){
+                  _submitForm();
+                  Navigator.push(context, allHotelsRoute);
+                },
+                child: const Text('Gửi'),
+              ),
+            ],
+          ),
+        )
+    );
+  }
+}
