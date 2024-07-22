@@ -1,17 +1,13 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'package:doanmobi/Screens/hoteler.dart';
-import 'package:doanmobi/Screens/hotelier/HotelierManager.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 
-import '../../WIdget/Appbar.dart';
-import '../HotelScreenHoteler.dart';
-import '../../models/Service.dart';
+import '../hoteler.dart';
 
 class addHotelerScreenHotel extends StatefulWidget {
   const addHotelerScreenHotel({super.key});
@@ -29,9 +25,7 @@ class _addHotelerScreenHotelState extends State<addHotelerScreenHotel> {
   final _policyController = TextEditingController();
 
   List<dynamic> _services = [];
-  String? _selectedService;
-  List<dynamic> _convenient = [];
-  String? _selectedConvenient;
+  List<String> _selectedServices = [];
   final List<String> _hotelTypes = ['Khách sạn', 'Nhà nghỉ'];
   String? _selectedHotelType;
 
@@ -50,28 +44,58 @@ class _addHotelerScreenHotelState extends State<addHotelerScreenHotel> {
   }
 
   Future<void> _submitForm() async {
+    final url = Uri.parse('https://10.0.2.2:7226/api/Hotel/addHotel');
 
-      final url = Uri.parse('https://10.0.2.2:7226/api/Hotel/addHotel');
+    // Lấy token và id từ SharedPreferences
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('auth_token') ?? '';
+    final id = prefs.getString('auth_id') ?? '';
 
-      // Lấy token và id từ SharedPreferences
-      final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString('auth_token') ?? '';
-      final id = prefs.getString('auth_id') ?? '';
+    // Chuẩn bị thân yêu cầu
+    final requestBody = {
+      "nameHotel": _nameController.text,
+      "addressHotel": _addressController.text,
+      "describeHotel": _describeController.text,
+      "policyHotel": _policyController.text,
+      "typeHotel": _selectedHotelType,
+      "statusHotel": true,
+      "idHotelier": id,
+      "images": [
+        {
+          "imageData": _image != null ? base64Encode(_image!) : '',
+        }
+      ],
+    };
 
-      // Chuẩn bị thân yêu cầu
+    try {
+      final response = await http.post(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: jsonEncode(requestBody),
+      );
+
+      if (response.statusCode == 200) {
+        final hotelId = jsonDecode(response.body)['idHotel']; // Assuming the API returns the created hotel ID
+        await _submitServices(hotelId);
+        print('Hotel created successfully');
+      } else {
+        print('Failed to create hotel: ${response.body}');
+      }
+    } catch (error) {
+      print('Error: $error');
+    }
+  }
+
+  Future<void> _submitServices(String hotelId) async {
+    final url = Uri.parse('https://10.0.2.2:7226/api/Service/addHotelService');
+
+    for (String serviceId in _selectedServices) {
       final requestBody = {
-        "nameHotel": _nameController.text,
-        "addressHotel": _addressController.text,
-        "describeHotel": _describeController.text,
-        "policyHotel": _policyController.text,
-        "typeHotel": _selectedHotelType,
-        "statusHotel": true,
-        "idHotelier": id,
-        "images": [
-          {
-            "imageData": _image != null ? base64Encode(_image!) : '',
-          }
-        ],
+        "idService": serviceId,
+        "idHotel": hotelId,
       };
 
       try {
@@ -79,30 +103,29 @@ class _addHotelerScreenHotelState extends State<addHotelerScreenHotel> {
           url,
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': 'Bearer $token',
           },
           body: jsonEncode(requestBody),
         );
 
         if (response.statusCode == 200) {
-          print('Hotel created successfully');
+          print('Service added successfully');
         } else {
-          print('Failed to create hotel: ${response.body}');
+          print('Failed to add service: ${response.body}');
         }
       } catch (error) {
         print('Error: $error');
       }
+    }
   }
 
   @override
   void initState() {
     super.initState();
     _fetchServices();
-    _fetchConvenient();
   }
 
   Future<void> _fetchServices() async {
-    final url = Uri.parse('https://10.0.2.2:7270/api/Service/dsAllService');
+    final url = Uri.parse('https://10.0.2.2:7226/api/Service/dsServicer');
     try {
       final response = await http.get(url);
 
@@ -116,24 +139,6 @@ class _addHotelerScreenHotelState extends State<addHotelerScreenHotel> {
       }
     } catch (error) {
       print('Error decoding services: $error');
-    }
-  }
-
-  Future<void> _fetchConvenient() async {
-    final url = Uri.parse('https://10.0.2.2:7270/api/Service/dsAllService');
-    try {
-      final response = await http.get(url);
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        setState(() {
-          _convenient = data;
-        });
-      } else {
-        print('Failed to fetch convenient');
-      }
-    } catch (error) {
-      print('Error decoding convenient: $error');
     }
   }
 
@@ -216,6 +221,23 @@ class _addHotelerScreenHotelState extends State<addHotelerScreenHotel> {
                   return null;
                 },
               ),
+              const SizedBox(height: 16.0),
+              Text('Dịch vụ',style: TextStyle(fontSize: 16.0),),
+              ..._services.map((service) {
+                return CheckboxListTile(
+                  title: Text(service['nameService']),
+                  value: _selectedServices.contains(service['idService']),
+                  onChanged: (bool? value) {
+                    setState(() {
+                      if (value == true) {
+                        _selectedServices.add(service['idService']);
+                      } else {
+                        _selectedServices.remove(service['idService']);
+                      }
+                    });
+                  },
+                );
+              }).toList(),
               const SizedBox(height: 16.0),
               ElevatedButton(
                 onPressed: (){

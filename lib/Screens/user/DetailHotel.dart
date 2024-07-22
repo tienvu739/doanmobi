@@ -18,11 +18,13 @@ class HotelDetailPage extends StatefulWidget {
 
 class _HotelDetailPageState extends State<HotelDetailPage> {
   int? totalPoints;
+  List<dynamic> _hotelServices = [];
 
   @override
   void initState() {
     super.initState();
     _fetchPoints();
+    _fetchHotelServices();
   }
 
   Future<void> _fetchPoints() async {
@@ -45,6 +47,32 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
         });
       } else {
         print('Failed to load points: ${response.body}');
+      }
+    } catch (error) {
+      print('Error: $error');
+    }
+  }
+
+  Future<void> _fetchHotelServices() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('auth_token') ?? '';
+    final url = Uri.parse('https://10.0.2.2:7226/api/Service/services/${widget.hotel.idHotel}');
+    try {
+      final response = await http.get(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        setState(() {
+          _hotelServices = data;
+        });
+      } else {
+        print('Failed to load services: ${response.body}');
       }
     } catch (error) {
       print('Error: $error');
@@ -159,7 +187,7 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
                           ),
                           Row(
                             children: [
-                              Icon(Icons.location_on, size: 25,color: Colors.red,),
+                              Icon(Icons.location_on, size: 25, color: Colors.red,),
                               SizedBox(
                                 width: 5.0,
                               ),
@@ -199,6 +227,22 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
                                 fontWeight: FontWeight.bold, fontSize: 20),
                           ),
                           Text(widget.hotel.policyHotel),
+                          SizedBox(
+                            height: 16.0,
+                          ),
+                          Text(
+                            "Dịch vụ",
+                            style: TextStyle(
+                                fontWeight: FontWeight.bold, fontSize: 20),
+                          ),
+                          Column(
+                            children: _hotelServices.map<Widget>((service) {
+                              return ListTile(
+                                title: Text(service['nameService']),
+                                leading: Icon(Icons.check, color: Colors.green),
+                              );
+                            }).toList(),
+                          ),
                           SizedBox(
                             height: 16.0,
                           ),
