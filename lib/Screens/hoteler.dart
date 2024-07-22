@@ -2,6 +2,7 @@ import 'package:doanmobi/Screens/HotelScreenHoteler.dart';
 import 'package:doanmobi/Screens/hotelier/HotelierManager.dart';
 import 'package:doanmobi/Screens/hotelier/OrderList.dart';
 import 'package:doanmobi/Screens/hotelier/RoomHotelerScreen.dart';
+import 'package:doanmobi/Screens/hotelier/profilehotelier.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:salomon_bottom_bar/salomon_bottom_bar.dart';
@@ -24,7 +25,7 @@ class _hotelerScreenState extends State<hotelerScreen> {
           HotelManagementScreen(),
           RoomHotelerScreen(),
           OrderPage(),
-          Container(color: Colors.deepPurpleAccent,),
+          profileHotelier(),
         ],
       ),
       bottomNavigationBar: SalomonBottomBar(
@@ -61,7 +62,7 @@ class _hotelerScreenState extends State<hotelerScreen> {
               title: const Text("Đơn hàng")),
           SalomonBottomBarItem(
               icon: const Icon(
-                Icons.people,
+                Icons.person,
                 size: 16.0,
               ),
               title: const Text("My"))
