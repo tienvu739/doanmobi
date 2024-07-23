@@ -58,7 +58,7 @@ class _addHotelerScreenHotelState extends State<addHotelerScreenHotel> {
       "describeHotel": _describeController.text,
       "policyHotel": _policyController.text,
       "typeHotel": _selectedHotelType,
-      "statusHotel": true,
+      "statusHotel": false,
       "idHotelier": id,
       "images": [
         {

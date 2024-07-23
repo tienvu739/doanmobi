@@ -1,4 +1,4 @@
-// ignore: file_names
+import 'dart:async';
 import 'dart:convert';
 import 'package:doanmobi/Screens/user/allHomestayList.dart';
 import 'package:doanmobi/Screens/user/allHoteList.dart';
@@ -10,7 +10,6 @@ import 'package:http/http.dart' as http;
 import '../WIdget/CategoryCard.dart';
 import '../models/Discount.dart';
 
-// ignore: camel_case_types
 class hotelScreen extends StatefulWidget {
   const hotelScreen({super.key});
 
@@ -18,8 +17,44 @@ class hotelScreen extends StatefulWidget {
   State<hotelScreen> createState() => _hotelScreenState();
 }
 
-// ignore: camel_case_types
 class _hotelScreenState extends State<hotelScreen> {
+  int _currentAdIndex = 0;
+  late PageController _pageController;
+  late Timer _timer;
+
+  final List<String> _ads = [
+    'assets/images/ad1.jpg',
+    'assets/images/ad2.jpg',
+    'assets/images/ad3.jpg',
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _pageController = PageController(initialPage: 0);
+
+    _timer = Timer.periodic(Duration(seconds: 5), (Timer timer) {
+      if (_currentAdIndex < _ads.length - 1) {
+        _currentAdIndex++;
+      } else {
+        _currentAdIndex = 0;
+      }
+
+      _pageController.animateToPage(
+        _currentAdIndex,
+        duration: Duration(milliseconds: 500),
+        curve: Curves.easeIn,
+      );
+    });
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    _timer.cancel();
+    super.dispose();
+  }
+
   Widget _buildItemCategory(
       Widget icon, Color color, Function() onTap, String title) {
     return GestureDetector(
@@ -43,6 +78,7 @@ class _hotelScreenState extends State<hotelScreen> {
       ),
     );
   }
+
   @override
   Widget build(BuildContext context) {
     return appBar(
@@ -73,7 +109,7 @@ class _hotelScreenState extends State<hotelScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SizedBox(height: 60.0,),
+          SizedBox(height: 60.0),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
@@ -162,6 +198,20 @@ class _hotelScreenState extends State<hotelScreen> {
               },
             ),
           ),
+          const SizedBox(height: 24.0),
+          Container(
+            height: 180.0,
+            child: PageView.builder(
+              controller: _pageController,
+              itemCount: _ads.length,
+              itemBuilder: (context, index) {
+                return Image.asset(
+                  _ads[index],
+                  fit: BoxFit.cover,
+                );
+              },
+            ),
+          ),
         ],
       ),
     );
@@ -177,4 +227,3 @@ Future<List<Discount>> fetchDiscounts() async {
     throw Exception('Failed to load discounts');
   }
 }
-
