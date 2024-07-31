@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:doanmobi/Screens/user/CommentScreenHotel.dart';
 import 'package:doanmobi/Screens/user/allRoomList.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -199,12 +200,22 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
                               if (totalPoints != null)
                                 Row(
                                   children: [
-                                    Icon(Icons.star, color: Colors.amber),
+                                    Icon(Icons.star, color: Colors.amber,),
                                     SizedBox(width: 5.0),
-                                    Text(
-                                      '$totalPoints',
-                                      style: TextStyle(fontSize: 20.0),
-                                    ),
+                                    GestureDetector(
+                                      child:Text(
+                                        '$totalPoints',
+                                        style: TextStyle(fontSize: 20.0),
+                                      ) ,
+                                      onTap: () {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) => CommentCreenHotel(hotelId: widget.hotel.idHotel),
+                                          ),
+                                        );
+                                      },
+                                    )
                                   ],
                                 ),
                             ],

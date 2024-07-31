@@ -1,9 +1,8 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'dart:convert';
-import 'package:doanmobi/models/hotel.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
+import 'package:doanmobi/models/hotel.dart';
 import 'DetailHotel.dart';
 
 class HotelSearchPage extends StatefulWidget {
@@ -15,7 +14,17 @@ class _HotelSearchPageState extends State<HotelSearchPage> {
   List<Hotel> _hotels = [];
   String _name = '';
   String _address = '';
+  String? _selectedRoomType;
+  double? _minPrice;
+  double? _maxPrice;
   String _token = '';
+
+  final List<String> _hotelTypes = [
+    'Phòng Standard',
+    'Phòng Superior',
+    'Phòng Deluxe',
+    'Phòng Suite'
+  ];
 
   @override
   void initState() {
@@ -29,7 +38,12 @@ class _HotelSearchPageState extends State<HotelSearchPage> {
   }
 
   Future<void> _searchHotels() async {
-    final url = Uri.parse('https://10.0.2.2:7226/api/Hotel/searchHotels?name=$_name&address=$_address');
+    final url = Uri.parse('https://10.0.2.2:7226/api/Hotel/searchHotels'
+        '?name=$_name'
+        '&address=$_address'
+        '&minPrice=${_minPrice ?? ''}'
+        '&maxPrice=${_maxPrice ?? ''}'
+        '&roomType=${_selectedRoomType ?? ''}');
     try {
       final response = await http.get(
         url,
@@ -40,14 +54,12 @@ class _HotelSearchPageState extends State<HotelSearchPage> {
       );
 
       if (response.statusCode == 200) {
-        // Kiểm tra xem phản hồi có phải là JSON hợp lệ không
         if (response.body.isNotEmpty) {
           final data = jsonDecode(response.body) as List;
           setState(() {
             _hotels = data.map((hotelJson) => Hotel.fromJson(hotelJson)).toList();
           });
         } else {
-          // Xử lý trường hợp phản hồi rỗng
           setState(() {
             _hotels = [];
           });
@@ -56,15 +68,12 @@ class _HotelSearchPageState extends State<HotelSearchPage> {
           );
         }
       } else {
-        // Xử lý phản hồi lỗi
         final errorResponse = jsonDecode(response.body);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(errorResponse['message'] ?? 'Failed to load hotels')),
         );
       }
     } catch (error) {
-      // Xử lý lỗi request
-      print('Error: $error');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Đã xảy ra lỗi: $error')),
       );
@@ -105,6 +114,39 @@ class _HotelSearchPageState extends State<HotelSearchPage> {
                         });
                       },
                     ),
+                    DropdownButtonFormField<String>(
+                      decoration: InputDecoration(labelText: 'Loại phòng'),
+                      value: _selectedRoomType,
+                      items: _hotelTypes.map((type) {
+                        return DropdownMenuItem(
+                          value: type,
+                          child: Text(type),
+                        );
+                      }).toList(),
+                      onChanged: (value) {
+                        setState(() {
+                          _selectedRoomType = value;
+                        });
+                      },
+                    ),
+                    TextField(
+                      decoration: InputDecoration(labelText: 'Giá tối thiểu'),
+                      keyboardType: TextInputType.number,
+                      onChanged: (value) {
+                        setState(() {
+                          _minPrice = double.tryParse(value);
+                        });
+                      },
+                    ),
+                    TextField(
+                      decoration: InputDecoration(labelText: 'Giá tối đa'),
+                      keyboardType: TextInputType.number,
+                      onChanged: (value) {
+                        setState(() {
+                          _maxPrice = double.tryParse(value);
+                        });
+                      },
+                    ),
                   ],
                 ),
               ),
@@ -126,8 +168,7 @@ class _HotelSearchPageState extends State<HotelSearchPage> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) =>
-                                HotelDetailPage(hotel: hotel),
+                            builder: (context) => HotelDetailPage(hotel: hotel),
                           ),
                         );
                       },

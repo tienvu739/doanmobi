@@ -57,6 +57,10 @@ class _OrderUserState extends State<OrderUser> {
     }
   }
 
+  Future<void> _refreshOrders() async {
+    await fetchOrders();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -67,41 +71,44 @@ class _OrderUserState extends State<OrderUser> {
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: orders.isEmpty
-            ? Center(child: CircularProgressIndicator())
-            : ListView.builder(
-          itemCount: orders.length,
-          itemBuilder: (context, index) {
-            final order = orders[index];
-            return Card(
-              child: ListTile(
-                title: Text(
-                  'Khách sạn: ${order['hotelName']}',
-                  style: TextStyle(
-                      fontSize: 20, fontWeight: FontWeight.bold),
+        child: RefreshIndicator(
+          onRefresh: _refreshOrders,
+          child: orders.isEmpty
+              ? Center(child: CircularProgressIndicator())
+              : ListView.builder(
+            itemCount: orders.length,
+            itemBuilder: (context, index) {
+              final order = orders[index];
+              return Card(
+                child: ListTile(
+                  title: Text(
+                    'Khách sạn: ${order['hotelName']}',
+                    style: TextStyle(
+                        fontSize: 20, fontWeight: FontWeight.bold),
+                  ),
+                  subtitle: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Phòng: ${order['roomName']}',
+                        style: TextStyle(fontSize: 15),
+                      ),
+                      Text('Ngày tạo: ${order['dateCreated']}',
+                          style: TextStyle(fontSize: 15)),
+                      Text('Ngày nhận phòng: ${order['checkInDate']}',
+                          style: TextStyle(fontSize: 15)),
+                      Text('Ngày trả phòng: ${order['checkOutDate']}',
+                          style: TextStyle(fontSize: 15)),
+                      Text(
+                        'Giá: ${order['price']} VND',
+                        style: TextStyle(color: Colors.red, fontSize: 15),
+                      ),
+                    ],
+                  ),
                 ),
-                subtitle: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Phòng: ${order['roomName']}',
-                      style: TextStyle(fontSize: 15),
-                    ),
-                    Text('Ngày tạo: ${order['dateCreated']}',
-                        style: TextStyle(fontSize: 15)),
-                    Text('Ngày nhận phòng: ${order['checkInDate']}',
-                        style: TextStyle(fontSize: 15)),
-                    Text('Ngày trả phòng: ${order['checkOutDate']}',
-                        style: TextStyle(fontSize: 15)),
-                    Text(
-                      'Giá: ${order['price']} VND',
-                      style: TextStyle(color: Colors.red, fontSize: 15),
-                    ),
-                  ],
-                ),
-              ),
-            );
-          },
+              );
+            },
+          ),
         ),
       ),
     );
