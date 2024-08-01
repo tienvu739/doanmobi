@@ -1,5 +1,4 @@
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
@@ -26,7 +25,8 @@ class _AllRoomHotelerState extends State<AllRoomHoteler> {
     final prefs = await SharedPreferences.getInstance();
     final id = prefs.getString('auth_id') ?? '';
     final token = prefs.getString('auth_token') ?? '';
-    final url = Uri.parse('https://10.0.2.2:7226/api/Room/dsRoom?idhotelier=$id');
+    final url =
+    Uri.parse('https://10.0.2.2:7226/api/Room/dsRoom?idhotelier=$id');
     try {
       final response = await http.post(
         url,
@@ -45,6 +45,67 @@ class _AllRoomHotelerState extends State<AllRoomHoteler> {
       }
     } catch (error) {
       print('Error: $error');
+    }
+  }
+
+  Future<void> _toggleRoomStatus(String idRoom) async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('auth_token') ?? '';
+    final url =
+    Uri.parse('https://10.0.2.2:7226/api/Room/toggleStatus?idRoom=$idRoom');
+    try {
+      final response = await http.put(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+      if (response.statusCode == 200) {
+        final updatedStatus = jsonDecode(response.body)['status'];
+        setState(() {
+          final roomIndex = _rooms.indexWhere((room) => room.idRoom == idRoom);
+          if (roomIndex != -1) {
+            _rooms[roomIndex] = _rooms[roomIndex].copyWith(statusRoom: updatedStatus);
+          }
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Trạng thái phòng đã được cập nhật.')),
+        );
+      } else {
+        print('Failed to toggle room status: ${response.body}');
+      }
+    } catch (error) {
+      print('Error: $error');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Đã xảy ra lỗi: $error')),
+      );
+    }
+  }
+
+  Future<String> _fetchHotelName(String idRoom) async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('auth_token') ?? '';
+    final url = Uri.parse('https://10.0.2.2:7226/api/Room/getHotelNameByRoomId?idRoom=$idRoom');
+
+    try {
+      final response = await http.get(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return data['hotelName'].toString();
+      } else {
+        print('Failed to fetch hotel name: ${response.body}');
+        return 'Unknown Hotel';
+      }
+    } catch (error) {
+      print('Error: $error');
+      return 'Unknown Hotel';
     }
   }
 
@@ -74,8 +135,8 @@ class _AllRoomHotelerState extends State<AllRoomHoteler> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Container(
-                            height: 200.0, // Chiều cao mặc định
-                            width: double.infinity, // Chiều rộng mặc định (full width)
+                            height: 200.0,
+                            width: double.infinity,
                             child: room.imageRooms.isNotEmpty
                                 ? Image.memory(
                               base64Decode(room.imageRooms[0].imageData),
@@ -99,7 +160,7 @@ class _AllRoomHotelerState extends State<AllRoomHoteler> {
                                   ),
                                 ),
                                 Text(
-                                  room.statusRoom ? 'Đã duyệt' : 'Chưa duyệt',
+                                  room.statusRoom ? 'Còn phòng' : 'Hết phòng',
                                   style: TextStyle(
                                     color: room.statusRoom ? Colors.green : Colors.red,
                                     fontWeight: FontWeight.bold,
@@ -109,9 +170,42 @@ class _AllRoomHotelerState extends State<AllRoomHoteler> {
                                   'Loại phòng: ${room.typeRoom}',
                                   style: TextStyle(fontSize: 16.0),
                                 ),
+                                FutureBuilder<String>(
+                                  future: _fetchHotelName(room.idRoom),
+                                  builder: (context, snapshot) {
+                                    if (snapshot.connectionState == ConnectionState.waiting) {
+                                      return Text('Đang tải...');
+                                    } else if (snapshot.hasError) {
+                                      return Text('Lỗi tải tên khách sạn');
+                                    } else if (snapshot.hasData) {
+                                      return Text(
+                                        'Khách sạn: ${snapshot.data}',
+                                        style: TextStyle(fontSize: 16.0),
+                                      );
+                                    } else {
+                                      return Text('Khách sạn: Unknown Hotel');
+                                    }
+                                  },
+                                ),
                                 Text(
                                   'Giá: ${room.price} VND',
                                   style: TextStyle(fontSize: 16.0),
+                                ),
+                                Align(
+                                  alignment: Alignment.centerRight,
+                                  child: ElevatedButton(
+                                    onPressed: () {
+                                      _toggleRoomStatus(room.idRoom);
+                                    },
+                                    child: Text(room.statusRoom
+                                        ? 'Hết phòng'
+                                        : 'Còn phòng',style: TextStyle(color: Colors.black),),
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: room.statusRoom
+                                          ? Colors.red
+                                          : Colors.green,
+                                    ),
+                                  ),
                                 ),
                               ],
                             ),

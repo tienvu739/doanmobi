@@ -45,4 +45,19 @@ class Room {
       imageRooms: imageList,
     );
   }
+  Room copyWith({bool? statusRoom}) {
+    return Room(
+      idRoom: idRoom,
+      nameRoom: nameRoom,
+      areaRoom: areaRoom,
+      people: people,
+      policyRoom: policyRoom,
+      bedNumber: bedNumber,
+      statusRoom: statusRoom ?? this.statusRoom,
+      typeRoom: typeRoom,
+      price: price,
+      idHotel: idHotel,
+      imageRooms: imageRooms,
+    );
+  }
 }

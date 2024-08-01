@@ -40,6 +40,7 @@ class _OrderUserState extends State<OrderUser> {
         setState(() {
           orders = responseData.map<Map<String, dynamic>>((order) {
             return {
+              'id': order['id'],
               'dateCreated': order['dateCreated'],
               'checkInDate': order['checkInDate'],
               'checkOutDate': order['checkOutDate'],
@@ -59,6 +60,72 @@ class _OrderUserState extends State<OrderUser> {
 
   Future<void> _refreshOrders() async {
     await fetchOrders();
+  }
+
+  Future<void> _deleteOrder(String id) async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('auth_token') ?? '';
+
+    final url = Uri.parse('https://10.0.2.2:7226/api/Order/delete?id=$id');
+    try {
+      final response = await http.delete(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        setState(() {
+          orders.removeWhere((order) => order['id'] == id);
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Đơn hàng đã được hủy thành công.')),
+        );
+      } else {
+        throw Exception('Failed to delete order');
+      }
+    } catch (error) {
+      print('Error: $error');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Đã xảy ra lỗi: $error')),
+      );
+    }
+  }
+
+  Future<void> _showDeleteConfirmationDialog(String id) async {
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false, // user must tap button to dismiss
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Xác nhận'),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: <Widget>[
+                Text('Bạn có chắc chắn muốn hủy đơn hàng này không?'),
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: Text('Không'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: Text('Có'),
+              onPressed: () {
+                Navigator.of(context).pop();
+                _deleteOrder(id);
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
@@ -102,6 +169,18 @@ class _OrderUserState extends State<OrderUser> {
                       Text(
                         'Giá: ${order['price']} VND',
                         style: TextStyle(color: Colors.red, fontSize: 15),
+                      ),
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: TextButton(
+                          onPressed: () {
+                            _showDeleteConfirmationDialog(order['id']);
+                          },
+                          child: Text(
+                            'Hủy',
+                            style: TextStyle(color: Colors.red),
+                          ),
+                        ),
                       ),
                     ],
                   ),
