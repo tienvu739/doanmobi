@@ -210,7 +210,7 @@ class _PaymentPageState extends State<PaymentPage> {
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     Text(
                       'Khuyến mãi:',
@@ -248,7 +248,7 @@ class _PaymentPageState extends State<PaymentPage> {
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     Text(
                       'Thành tiền:',
@@ -256,7 +256,7 @@ class _PaymentPageState extends State<PaymentPage> {
                     ),
                     Text(
                       '$_totalPrice VND',
-                      style: TextStyle(fontSize: 25, color: Colors.red),
+                      style: TextStyle(fontSize: 25, color: Colors.red,fontWeight: FontWeight.bold),
                     ),
                   ],
                 ),

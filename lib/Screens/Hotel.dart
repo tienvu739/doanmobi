@@ -169,7 +169,7 @@ class _hotelScreenState extends State<hotelScreen> {
                           borderRadius: BorderRadius.circular(12.0),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.grey.withOpacity(0.5),
+                              color: Colors.black.withOpacity(0.8),
                               spreadRadius: 1,
                               blurRadius: 7,
                               offset: Offset(0, 3),

@@ -51,19 +51,17 @@ class _HotelSearchPageState extends State<HotelSearchPage> {
       );
 
       if (response.statusCode == 200) {
-        if (response.body.isNotEmpty) {
-          final data = jsonDecode(response.body) as List;
-          setState(() {
-            _hotels = data.map((hotelJson) => Hotel.fromJson(hotelJson)).toList();
-          });
-        } else {
-          setState(() {
-            _hotels = [];
-          });
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Không tìm thấy khách sạn nào phù hợp.')),
-          );
-        }
+        final data = jsonDecode(response.body) as List;
+        setState(() {
+          _hotels = data.map((hotelJson) => Hotel.fromJson(hotelJson)).toList();
+        });
+      } else if (response.statusCode == 404) {
+        setState(() {
+          _hotels = [];
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Không tìm thấy khách sạn nào phù hợp.')),
+        );
       } else {
         final errorResponse = jsonDecode(response.body);
         ScaffoldMessenger.of(context).showSnackBar(

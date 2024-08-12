@@ -134,161 +134,164 @@ class _addRoomScreenState extends State<addRoomScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: SingleChildScrollView(
-        child: Column(
-          children: [
-            SizedBox(height: 40.0),
-            // Danh sách khách sạn
-            TextButton.icon(
-              onPressed: _pickImage,
-              icon: const Icon(
-                Icons.image,
-                size: 60,
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            children: [
+              SizedBox(height: 40.0),
+              // Danh sách khách sạn
+              TextButton.icon(
+                onPressed: _pickImage,
+                icon: const Icon(
+                  Icons.image,
+                  size: 60,
+                ),
+                label: const Text('Chọn ảnh'),
               ),
-              label: const Text('Chọn ảnh'),
-            ),
-            if (_image != null)
-            // Display the picked image
-              Image.memory(_image!),
-            const SizedBox(height: 16.0),
-            DropdownButtonFormField<String>(
-              decoration: const InputDecoration(
-                labelText: 'Khách sạn',
+              if (_image != null)
+              // Display the picked image
+                Image.memory(_image!),
+              const SizedBox(height: 16.0),
+              DropdownButtonFormField<String>(
+                decoration: const InputDecoration(
+                  labelText: 'Khách sạn',
+                ),
+                value: _selectedidHotel,
+                onChanged: (String? newValue) {
+                  setState(() {
+                    _selectedidHotel = newValue;
+                  });
+                },
+                items: _idhotel
+                    .map<DropdownMenuItem<String>>((Map<String, String> hotel) {
+                  return DropdownMenuItem<String>(
+                    value: hotel['idHotel'],
+                    child: Text(hotel['nameHotel']!),
+                  );
+                }).toList(),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Vui lòng chọn khách sạn';
+                  }
+                  return null;
+                },
               ),
-              value: _selectedidHotel,
-              onChanged: (String? newValue) {
-                setState(() {
-                  _selectedidHotel = newValue;
-                });
-              },
-              items: _idhotel
-                  .map<DropdownMenuItem<String>>((Map<String, String> hotel) {
-                return DropdownMenuItem<String>(
-                  value: hotel['idHotel'],
-                  child: Text(hotel['nameHotel']!),
-                );
-              }).toList(),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Vui lòng chọn khách sạn';
-                }
-                return null;
-              },
-            ),
-            const SizedBox(height: 16.0),
-            TextFormField(
-              controller: _nameController,
-              decoration: const InputDecoration(labelText: 'Tên phòng'),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Vui lòng nhập tên phòng';
-                }
-                return null;
-              },
-            ),
-            TextFormField(
-              controller: _addressController,
-              decoration: const InputDecoration(labelText: 'Diện tích phòng'),
-              keyboardType: TextInputType.number,
-              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Vui lòng nhập diện tích';
-                }
-                if (int.tryParse(value) == null) {
-                  return 'Vui lòng nhập một số hợp lệ';
-                }
-                return null;
-              },
-            ),
-            TextFormField(
-              controller: _peopleController,
-              decoration: const InputDecoration(labelText: 'Số người'),
-              keyboardType: TextInputType.number,
-              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Vui lòng nhập số người';
-                }
-                if (int.tryParse(value) == null) {
-                  return 'Vui lòng nhập một số hợp lệ';
-                }
-                return null;
-              },
-            ),
-            TextFormField(
-              controller: _policyController,
-              decoration: const InputDecoration(labelText: 'Chính sách'),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Vui lòng nhập chính sách';
-                }
-                return null;
-              },
-            ),
-            TextFormField(
-              controller: _bedController,
-              decoration: const InputDecoration(labelText: 'Số giường'),
-              keyboardType: TextInputType.number,
-              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Vui lòng nhập số giường';
-                }
-                if (int.tryParse(value) == null) {
-                  return 'Vui lòng nhập một số hợp lệ';
-                }
-                return null;
-              },
-            ),
-            const SizedBox(height: 16.0),
-            DropdownButtonFormField<String>(
-              decoration: const InputDecoration(
-                labelText: 'Loại phòng',
+              const SizedBox(height: 16.0),
+              TextFormField(
+                controller: _nameController,
+                decoration: const InputDecoration(labelText: 'Tên phòng'),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Vui lòng nhập tên phòng';
+                  }
+                  return null;
+                },
               ),
-              value: _selectedRoomType,
-              onChanged: (String? newValue) {
-                setState(() {
-                  _selectedRoomType = newValue;
-                });
-              },
-              items: _hotelTypes.map<DropdownMenuItem<String>>((String value) {
-                return DropdownMenuItem<String>(
-                  value: value,
-                  child: Text(value),
-                );
-              }).toList(),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Vui lòng chọn loại phòng';
-                }
-                return null;
-              },
-            ),
-            const SizedBox(height: 16.0),
-            TextFormField(
-              controller: _priceController,
-              decoration: const InputDecoration(labelText: 'Giá tiền'),
-              keyboardType: TextInputType.number,
-              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Vui lòng nhập giá tiền';
-                }
-                if (int.tryParse(value) == null) {
-                  return 'Vui lòng nhập một số hợp lệ';
-                }
-                return null;
-              },
-            ),
-            const SizedBox(height: 16.0),
-            ElevatedButton(
-              onPressed: () {
-                _submitForm();
-                Navigator.push(context, allHotelsRoute);
-              },
-              child: const Text('Gửi'),
-            ),
-          ],
+              TextFormField(
+                controller: _addressController,
+                decoration: const InputDecoration(labelText: 'Diện tích phòng'),
+                keyboardType: TextInputType.number,
+                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Vui lòng nhập diện tích';
+                  }
+                  if (int.tryParse(value) == null) {
+                    return 'Vui lòng nhập một số hợp lệ';
+                  }
+                  return null;
+                },
+              ),
+              TextFormField(
+                controller: _peopleController,
+                decoration: const InputDecoration(labelText: 'Số người'),
+                keyboardType: TextInputType.number,
+                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Vui lòng nhập số người';
+                  }
+                  if (int.tryParse(value) == null) {
+                    return 'Vui lòng nhập một số hợp lệ';
+                  }
+                  return null;
+                },
+              ),
+              TextFormField(
+                controller: _policyController,
+                decoration: const InputDecoration(labelText: 'Chính sách'),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Vui lòng nhập chính sách';
+                  }
+                  return null;
+                },
+              ),
+              TextFormField(
+                controller: _bedController,
+                decoration: const InputDecoration(labelText: 'Số giường'),
+                keyboardType: TextInputType.number,
+                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Vui lòng nhập số giường';
+                  }
+                  if (int.tryParse(value) == null) {
+                    return 'Vui lòng nhập một số hợp lệ';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 16.0),
+              DropdownButtonFormField<String>(
+                decoration: const InputDecoration(
+                  labelText: 'Loại phòng',
+                ),
+                value: _selectedRoomType,
+                onChanged: (String? newValue) {
+                  setState(() {
+                    _selectedRoomType = newValue;
+                  });
+                },
+                items: _hotelTypes.map<DropdownMenuItem<String>>((String value) {
+                  return DropdownMenuItem<String>(
+                    value: value,
+                    child: Text(value),
+                  );
+                }).toList(),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Vui lòng chọn loại phòng';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 16.0),
+              TextFormField(
+                controller: _priceController,
+                decoration: const InputDecoration(labelText: 'Giá tiền'),
+                keyboardType: TextInputType.number,
+                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Vui lòng nhập giá tiền';
+                  }
+                  if (int.tryParse(value) == null) {
+                    return 'Vui lòng nhập một số hợp lệ';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 16.0),
+              ElevatedButton(
+                onPressed: () {
+                  _submitForm();
+                  Navigator.push(context, allHotelsRoute);
+                },
+                child: const Text('Gửi'),
+              ),
+            ],
+          ),
         ),
       ),
     );

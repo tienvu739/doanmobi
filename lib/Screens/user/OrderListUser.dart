@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:intl/intl.dart';
 
 class OrderUser extends StatefulWidget {
   const OrderUser({super.key});
@@ -94,38 +95,56 @@ class _OrderUserState extends State<OrderUser> {
     }
   }
 
-  Future<void> _showDeleteConfirmationDialog(String id) async {
-    return showDialog<void>(
-      context: context,
-      barrierDismissible: false, // user must tap button to dismiss
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Xác nhận'),
-          content: SingleChildScrollView(
-            child: ListBody(
-              children: <Widget>[
-                Text('Bạn có chắc chắn muốn hủy đơn hàng này không?'),
-              ],
+  Future<void> _showDeleteConfirmationDialog(Map<String, dynamic> order) async {
+    DateTime now = DateTime.now();
+    DateTime dateCreated = DateFormat('yyyy-MM-ddTHH:mm:ss').parse(order['dateCreated']);
+    DateTime checkInDate = DateFormat('yyyy-MM-ddTHH:mm:ss').parse(order['checkInDate']);
+
+    // Kiểm tra nếu đơn hàng được tạo trong vòng 24 giờ và check-in còn ít nhất 24 giờ
+    bool canCancel = now.isBefore(dateCreated.add(Duration(hours: 24))) && now.isBefore(checkInDate.subtract(Duration(hours: 24)));
+
+    if (canCancel) {
+      return showDialog<void>(
+        context: context,
+        barrierDismissible: false, // user must tap button to dismiss
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('Xác nhận'),
+            content: SingleChildScrollView(
+              child: ListBody(
+                children: <Widget>[
+                  Text('Bạn có chắc chắn muốn hủy đơn hàng này không?'),
+                ],
+              ),
             ),
-          ),
-          actions: <Widget>[
-            TextButton(
-              child: Text('Không'),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-            TextButton(
-              child: Text('Có'),
-              onPressed: () {
-                Navigator.of(context).pop();
-                _deleteOrder(id);
-              },
-            ),
-          ],
-        );
-      },
-    );
+            actions: <Widget>[
+              TextButton(
+                child: Text('Không'),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+              TextButton(
+                child: Text('Có'),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  _deleteOrder(order['id']);
+                },
+              ),
+            ],
+          );
+        },
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Bạn chỉ có thể hủy đơn hàng trong vòng 24 giờ sau khi tạo và trước 24 giờ check-in.')),
+      );
+    }
+  }
+
+  String _formatDate(String dateString) {
+    DateTime dateTime = DateFormat('yyyy-MM-ddTHH:mm:ss').parse(dateString);
+    return DateFormat('yyyy-MM-dd').format(dateTime);
   }
 
   @override
@@ -160,11 +179,11 @@ class _OrderUserState extends State<OrderUser> {
                         'Phòng: ${order['roomName']}',
                         style: TextStyle(fontSize: 15),
                       ),
-                      Text('Ngày tạo: ${order['dateCreated']}',
+                      Text('Ngày tạo: ${_formatDate(order['dateCreated'])}',
                           style: TextStyle(fontSize: 15)),
-                      Text('Ngày nhận phòng: ${order['checkInDate']}',
+                      Text('Ngày nhận phòng: ${_formatDate(order['checkInDate'])}',
                           style: TextStyle(fontSize: 15)),
-                      Text('Ngày trả phòng: ${order['checkOutDate']}',
+                      Text('Ngày trả phòng: ${_formatDate(order['checkOutDate'])}',
                           style: TextStyle(fontSize: 15)),
                       Text(
                         'Giá: ${order['price']} VND',
@@ -174,7 +193,7 @@ class _OrderUserState extends State<OrderUser> {
                         alignment: Alignment.centerRight,
                         child: TextButton(
                           onPressed: () {
-                            _showDeleteConfirmationDialog(order['id']);
+                            _showDeleteConfirmationDialog(order);
                           },
                           child: Text(
                             'Hủy',

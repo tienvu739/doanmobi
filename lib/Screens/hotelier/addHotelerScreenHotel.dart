@@ -45,12 +45,10 @@ class _addHotelerScreenHotelState extends State<addHotelerScreenHotel> {
   Future<void> _submitForm() async {
     final url = Uri.parse('https://10.0.2.2:7226/api/Hotel/addHotel');
 
-    // Lấy token và id từ SharedPreferences
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('auth_token') ?? '';
     final id = prefs.getString('auth_id') ?? '';
 
-    // Chuẩn bị thân yêu cầu
     final requestBody = {
       "nameHotel": _nameController.text,
       "addressHotel": _addressController.text,
@@ -77,7 +75,7 @@ class _addHotelerScreenHotelState extends State<addHotelerScreenHotel> {
       );
 
       if (response.statusCode == 200) {
-        final hotelId = jsonDecode(response.body)['idHotel']; // Assuming the API returns the created hotel ID
+        final hotelId = jsonDecode(response.body)['idHotel'];
         await _submitServices(hotelId);
         print('Hotel created successfully');
       } else {
@@ -145,107 +143,132 @@ class _addHotelerScreenHotelState extends State<addHotelerScreenHotel> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: SingleChildScrollView(
-        child: Column(
-          children: [
-            SizedBox(height: 40.0),
-            // Danh sách khách sạn
-            TextButton.icon(
-              onPressed: _pickImage,
-              icon: const Icon(Icons.image, size: 60,),
-              label: const Text('Chọn ảnh'),
-            ),
-            if (_image != null)
-              Image.memory(_image!),
-            TextFormField(
-              controller: _nameController,
-              decoration: const InputDecoration(labelText: 'Tên khách sạn'),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Vui lòng nhập tên khách sạn';
-                }
-                return null;
-              },
-            ),
-            TextFormField(
-              controller: _addressController,
-              decoration: const InputDecoration(labelText: 'Địa chỉ'),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Vui lòng nhập địa chỉ';
-                }
-                return null;
-              },
-            ),
-            TextFormField(
-              controller: _describeController,
-              decoration: const InputDecoration(labelText: 'Mô tả'),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Vui lòng nhập mô tả';
-                }
-                return null;
-              },
-            ),
-            TextFormField(
-              controller: _policyController,
-              decoration: const InputDecoration(labelText: 'Chính sách'),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Vui lòng nhập chính sách';
-                }
-                return null;
-              },
-            ),
-            const SizedBox(height: 16.0),
-            DropdownButtonFormField<String>(
-              decoration: const InputDecoration(
-                labelText: 'Loại hình khách sạn',
+        child: Padding(
+          padding: const EdgeInsets.all(16.0), // Toàn bộ lùi vào 16px
+          child: Column(
+            children: [
+              SizedBox(height: 40.0),
+              TextButton.icon(
+                onPressed: _pickImage,
+                icon: const Icon(Icons.image, size: 60,),
+                label: const Text('Chọn ảnh'),
               ),
-              value: _selectedHotelType,
-              onChanged: (String? newValue) {
-                setState(() {
-                  _selectedHotelType = newValue;
-                });
-              },
-              items: _hotelTypes.map<DropdownMenuItem<String>>((String value) {
-                return DropdownMenuItem<String>(
-                  value: value,
-                  child: Text(value),
-                );
-              }).toList(),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Vui lòng chọn loại hình khách sạn';
-                }
-                return null;
-              },
-            ),
-            const SizedBox(height: 16.0),
-            Text('Dịch vụ', style: TextStyle(fontSize: 16.0)),
-            ..._services.map((service) {
-              return CheckboxListTile(
-                title: Text(service['nameService']),
-                value: _selectedServices.contains(service['idService']),
-                onChanged: (bool? value) {
-                  setState(() {
-                    if (value == true) {
-                      _selectedServices.add(service['idService']);
-                    } else {
-                      _selectedServices.remove(service['idService']);
+              if (_image != null)
+                Image.memory(_image!),
+              Padding(
+                padding: const EdgeInsets.only(left: 0.0), // Lùi vào 10px
+                child: TextFormField(
+                  controller: _nameController,
+                  decoration: const InputDecoration(labelText: 'Tên khách sạn'),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Vui lòng nhập tên khách sạn';
                     }
-                  });
+                    return null;
+                  },
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.only(left: 0.0), // Lùi vào 10px
+                child: TextFormField(
+                  controller: _addressController,
+                  decoration: const InputDecoration(labelText: 'Địa chỉ'),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Vui lòng nhập địa chỉ';
+                    }
+                    return null;
+                  },
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.only(left: 0.0), // Lùi vào 10px
+                child: TextFormField(
+                  controller: _describeController,
+                  decoration: const InputDecoration(labelText: 'Mô tả'),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Vui lòng nhập mô tả';
+                    }
+                    return null;
+                  },
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.only(left: 0.0), // Lùi vào 10px
+                child: TextFormField(
+                  controller: _policyController,
+                  decoration: const InputDecoration(labelText: 'Chính sách'),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Vui lòng nhập chính sách';
+                    }
+                    return null;
+                  },
+                ),
+              ),
+              const SizedBox(height: 16.0),
+              Padding(
+                padding: const EdgeInsets.only(left: 0.0), // Lùi vào 10px
+                child: DropdownButtonFormField<String>(
+                  decoration: const InputDecoration(
+                    labelText: 'Loại hình khách sạn',
+                  ),
+                  value: _selectedHotelType,
+                  onChanged: (String? newValue) {
+                    setState(() {
+                      _selectedHotelType = newValue;
+                    });
+                  },
+                  items: _hotelTypes.map<DropdownMenuItem<String>>((String value) {
+                    return DropdownMenuItem<String>(
+                      value: value,
+                      child: Text(value),
+                    );
+                  }).toList(),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Vui lòng chọn loại hình khách sạn';
+                    }
+                    return null;
+                  },
+                ),
+              ),
+              const SizedBox(height: 16.0),
+              Padding(
+                padding: const EdgeInsets.only(left: 0.0), // Lùi vào 10px
+                child: Text('Dịch vụ', style: TextStyle(fontSize: 16.0)),
+              ),
+              Padding(
+                padding: const EdgeInsets.only(left: 0.0), // Lùi vào 10px
+                child: Column(
+                  children: _services.map((service) {
+                    return CheckboxListTile(
+                      title: Text(service['nameService']),
+                      value: _selectedServices.contains(service['idService']),
+                      onChanged: (bool? value) {
+                        setState(() {
+                          if (value == true) {
+                            _selectedServices.add(service['idService']);
+                          } else {
+                            _selectedServices.remove(service['idService']);
+                          }
+                        });
+                      },
+                    );
+                  }).toList(),
+                ),
+              ),
+              const SizedBox(height: 16.0),
+              ElevatedButton(
+                onPressed: () {
+                  _submitForm();
+                  Navigator.push(context, allHotelsRoute);
                 },
-              );
-            }).toList(),
-            const SizedBox(height: 16.0),
-            ElevatedButton(
-              onPressed: () {
-                _submitForm();
-                Navigator.push(context, allHotelsRoute);
-              },
-              child: const Text('Gửi'),
-            ),
-          ],
+                child: const Text('Gửi'),
+              ),
+            ],
+          ),
         ),
       ),
     );

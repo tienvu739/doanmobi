@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -89,6 +90,11 @@ class _OrderPageState extends State<OrderPage> {
     }
   }
 
+  String _formatDate(String dateString) {
+    DateTime dateTime = DateFormat('yyyy-MM-ddTHH:mm:ss').parse(dateString);
+    return DateFormat('yyyy-MM-dd').format(dateTime);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -121,11 +127,11 @@ class _OrderPageState extends State<OrderPage> {
                         'Phòng: ${order['roomName']}',
                         style: TextStyle(fontSize: 15),
                       ),
-                      Text('Ngày tạo: ${order['dateCreated']}',
+                      Text('Ngày tạo: ${_formatDate(order['dateCreated'])}',
                           style: TextStyle(fontSize: 15)),
-                      Text('Ngày nhận phòng: ${order['checkInDate']}',
+                      Text('Ngày nhận phòng: ${_formatDate(order['checkInDate'])}',
                           style: TextStyle(fontSize: 15)),
-                      Text('Ngày trả phòng: ${order['checkOutDate']}',
+                      Text('Ngày trả phòng: ${_formatDate(order['checkOutDate'])}',
                           style: TextStyle(fontSize: 15)),
                       Text(
                         'Giá: ${order['price']} VND',
