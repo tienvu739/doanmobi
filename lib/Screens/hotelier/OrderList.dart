@@ -44,7 +44,8 @@ class _OrderPageState extends State<OrderPage> {
               'checkOutDate': order['checkOutDate'],
               'price': order['price'],
               'hotelName': order['hotelName'],
-              'roomName': order['roomName']
+              'roomName': order['roomName'],
+              'stastus': order['stastus']
             };
           }).toList();
         });
@@ -130,12 +131,16 @@ class _OrderPageState extends State<OrderPage> {
                         'Giá: ${order['price']} VND',
                         style: TextStyle(color: Colors.red, fontSize: 15),
                       ),
+                      Text( 'Trạng thái: ' + (order['stastus']? 'Đã thanh toán' : 'Đã hủy phòng'),
+                        style: TextStyle(color: Colors.red, fontSize: 15),)
                     ],
                   ),
-                  trailing: IconButton(
-                    icon: Icon(Icons.delete, color: Colors.red),
+                  trailing: order['stastus']
+                      ? IconButton(
+                    icon: Icon(Icons.cancel, color: Colors.red),
                     onPressed: () => _deleteOrder(order['id']),
-                  ),
+                  )
+                      : null, // Không hiển thị gì nếu stastus là false
                 ),
               );
             },

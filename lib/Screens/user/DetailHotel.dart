@@ -175,12 +175,18 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
                         children: [
                           Row(
                             children: [
-                              Text(
-                                widget.hotel.nameHotel,
-                                style: TextStyle(
-                                    fontWeight: FontWeight.bold, fontSize: 40),
+                              Flexible(
+                                child: Text(
+                                  widget.hotel.nameHotel,
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 30,
+                                  ),
+                                  softWrap: true,
+                                  overflow: TextOverflow.ellipsis, // Thêm dấu "..." nếu nội dung quá dài
+                                  maxLines: 2, // Giới hạn số dòng
+                                ),
                               ),
-                              Spacer(),
                             ],
                           ),
                           SizedBox(
@@ -192,9 +198,16 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
                               SizedBox(
                                 width: 5.0,
                               ),
-                              Text(
-                                widget.hotel.addressHotel,
-                                style: TextStyle(fontSize: 20.0),
+                              Flexible(
+                                child: Text(
+                                  widget.hotel.addressHotel,
+                                  style: TextStyle(
+                                    fontSize: 20.0,
+                                  ),
+                                  softWrap: true,
+                                  overflow: TextOverflow.visible,
+                                  maxLines: 2,
+                                ),
                               ),
                               Spacer(),
                               if (totalPoints != null)
@@ -267,7 +280,7 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
                                 ),
                               );
                             },
-                            child: Text('Chọn phòng'),
+                            child: Text('Xem phòng'),
                           )
                         ],
                       ),

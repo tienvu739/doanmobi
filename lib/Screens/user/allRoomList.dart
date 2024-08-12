@@ -71,14 +71,16 @@ class _AllRoomListState extends State<AllRoomList> {
                 itemBuilder: (context, index) {
                   final room = _rooms[index];
                   return GestureDetector(
-                    onTap: () {
+                    onTap: room.statusRoom
+                        ? () {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
                           builder: (context) => DetailRoom(room: room),
                         ),
                       );
-                    },
+                    }
+                        : null, // Không làm gì nếu phòng hết
                     child: Padding(
                       padding: const EdgeInsets.symmetric(vertical: 8.0),
                       child: Container(

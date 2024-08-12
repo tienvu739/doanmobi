@@ -12,11 +12,9 @@ class HotelSearchPage extends StatefulWidget {
 
 class _HotelSearchPageState extends State<HotelSearchPage> {
   List<Hotel> _hotels = [];
-  String _name = '';
-  String _address = '';
+  String _searchQuery = '';
   String? _selectedRoomType;
-  double? _minPrice;
-  double? _maxPrice;
+  RangeValues _priceRange = RangeValues(0, 2000000); // Updated max value
   String _token = '';
 
   final List<String> _hotelTypes = [
@@ -39,10 +37,9 @@ class _HotelSearchPageState extends State<HotelSearchPage> {
 
   Future<void> _searchHotels() async {
     final url = Uri.parse('https://10.0.2.2:7226/api/Hotel/searchHotels'
-        '?name=$_name'
-        '&address=$_address'
-        '&minPrice=${_minPrice ?? ''}'
-        '&maxPrice=${_maxPrice ?? ''}'
+        '?searchTerm=$_searchQuery'
+        '&minPrice=${_priceRange.start}'
+        '&maxPrice=${_priceRange.end}'
         '&roomType=${_selectedRoomType ?? ''}');
     try {
       final response = await http.get(
@@ -99,18 +96,10 @@ class _HotelSearchPageState extends State<HotelSearchPage> {
                 child: Column(
                   children: [
                     TextField(
-                      decoration: InputDecoration(labelText: 'Tên khách sạn'),
+                      decoration: InputDecoration(labelText: 'Tên hoặc địa chỉ khách sạn'),
                       onChanged: (value) {
                         setState(() {
-                          _name = value;
-                        });
-                      },
-                    ),
-                    TextField(
-                      decoration: InputDecoration(labelText: 'Địa chỉ'),
-                      onChanged: (value) {
-                        setState(() {
-                          _address = value;
+                          _searchQuery = value;
                         });
                       },
                     ),
@@ -129,24 +118,22 @@ class _HotelSearchPageState extends State<HotelSearchPage> {
                         });
                       },
                     ),
-                    TextField(
-                      decoration: InputDecoration(labelText: 'Giá tối thiểu'),
-                      keyboardType: TextInputType.number,
-                      onChanged: (value) {
+                    RangeSlider(
+                      values: _priceRange,
+                      min: 0,
+                      max: 2000000, // Updated max value
+                      divisions: 100,
+                      labels: RangeLabels(
+                        '${_priceRange.start.round()} VND',
+                        '${_priceRange.end.round()} VND',
+                      ),
+                      onChanged: (RangeValues values) {
                         setState(() {
-                          _minPrice = double.tryParse(value);
+                          _priceRange = values;
                         });
                       },
                     ),
-                    TextField(
-                      decoration: InputDecoration(labelText: 'Giá tối đa'),
-                      keyboardType: TextInputType.number,
-                      onChanged: (value) {
-                        setState(() {
-                          _maxPrice = double.tryParse(value);
-                        });
-                      },
-                    ),
+                    Text('Giá: ${_priceRange.start.round()} VND - ${_priceRange.end.round()} VND'),
                   ],
                 ),
               ),

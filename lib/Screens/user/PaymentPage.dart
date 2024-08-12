@@ -78,6 +78,7 @@ class _PaymentPageState extends State<PaymentPage> {
       'idUser': idUser,
       'idDiscount': _selectedidDiscount,
       'idRoom': widget.roomId,
+      'Stastus': true,
     });
 
     try {

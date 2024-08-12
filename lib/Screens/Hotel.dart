@@ -23,9 +23,11 @@ class _hotelScreenState extends State<hotelScreen> {
   late Timer _timer;
 
   final List<String> _ads = [
-    'assets/images/ad1.jpg',
-    'assets/images/ad2.jpg',
-    'assets/images/ad3.jpg',
+    'assets/images/QC1.jpg',
+    'assets/images/QC2.jpg',
+    'assets/images/QC3.jpg',
+    'assets/images/QC4.jpg',
+    'assets/images/QC5.jpg',
   ];
 
   @override
@@ -200,7 +202,7 @@ class _hotelScreenState extends State<hotelScreen> {
           ),
           const SizedBox(height: 24.0),
           Container(
-            height: 180.0,
+            height: 160.0,
             child: PageView.builder(
               controller: _pageController,
               itemCount: _ads.length,
